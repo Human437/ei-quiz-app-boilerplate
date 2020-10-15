@@ -6,3 +6,35 @@
   * https://github.com/andreacardybailey/responsive_example/blob/master/styles/responsive-base.css 
   *
 */
+
+body{
+  background-image: url('images/y-so-serious.png');;
+  font-family: Arial, Helvetica, sans-serif;
+}
+h1,h2{
+  color: whitesmoke;
+}
+header{
+  text-align: center;
+  font-size: 30px;
+}
+.wrapper{
+  background-color: whitesmoke;
+  color:black;
+  /* border-radius: 15px; */
+  opacity: .7;
+  width: 100%;
+  text-align: center;
+}
+button,.submit{
+  background-color: red;
+  border-radius: 10px;
+  padding: 7px;
+  font-weight: bold;
+  border-style: none;
+  margin-bottom: 7px;
+}
+
+p{
+  padding: 7px;
+}
