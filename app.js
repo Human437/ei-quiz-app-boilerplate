@@ -87,10 +87,6 @@ function generateStartPage(){
   $('main').html('<div class="wrapper"><p>This quiz will assess your knowledge of the Diesel Cycle, please have your ideal gas table ready.</p><button id = "startQuiz">Start Quiz</button></div>');
 };
 
-function getQuestionNumber(){
-  return store.questionNumber;
-}
-
 function getQuestion(num){
   return store.questions[num].question;
 }
@@ -98,7 +94,7 @@ function getQuestion(num){
 function getAnswers(num){
   let answers = '';
   for(i=0;i<store.questions[num].answers.length;i++){
-    answers += `<input type="radio" id=${store.questions[num].answers[i]} name="answer" value="${store.questions[num].answers[i]}"required="required"> <label for="${store.questions[num].answers[i]}">${store.questions[num].answers[i]}</label><br>`
+    answers += `<input type="radio" id=${store.questions[num].answers[i]} name="answer" value="${store.questions[num].answers[i]}" required/> <label for="${store.questions[num].answers[i]}">${store.questions[num].answers[i]}</label><br>`
   }
   return answers;
 }
