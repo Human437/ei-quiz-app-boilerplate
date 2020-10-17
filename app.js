@@ -35,7 +35,7 @@ const store = {
       question: 'An air-standard Diesel cycle has a compression ratio of 20.910. The cylinder contains 0.075 kg of air. At the beginning of the compression the pressure and temperature are 101 kPa and 298 K, respectively. The maximum temperature in the cycle is 1900 K. Accounting for the variation of specific heats with temperature, determine the cutoff rato.',
       answers: [
         '2.021',
-        '2.21',
+        '2.210',
         '20.021',
         '20.21'
       ],
@@ -52,9 +52,8 @@ const store = {
       correctAnswer: '61.4%'
     }
   ],
-  quizStarted: false,
   questionNumber: 0,
-  score: 0
+  correctAnswers: 0
 };
 
 /**
@@ -76,17 +75,16 @@ const store = {
 
 // These functions return HTML templates
 
-function questionGenerator(){
-  console.log('questionGenerator has ran');
-};
-
-
 /********** RENDER FUNCTION(S) **********/
 
 // This function conditionally replaces the contents of the <main> tag based on the state of the store
 
+/********** EVENT HANDLER FUNCTIONS **********/
+
+// These functions handle events (submit, click, etc)
+// On button click in main, check to see what kind of button it is and calls the corresponding function to generate stuff
 function generateStartPage(){
-  $('main').html('<div class="wrapper"><p>This quiz will assess your knowledge of the Diesel Cycle, please have your ideal gas table ready.</p><button>Start Quiz</button></div>');
+  $('main').html('<div class="wrapper"><p>This quiz will assess your knowledge of the Diesel Cycle, please have your ideal gas table ready.</p><button id = "startQuiz">Start Quiz</button></div>');
 };
 
 function getQuestionNumber(){
@@ -94,13 +92,13 @@ function getQuestionNumber(){
 }
 
 function getQuestion(num){
-  return store.questions[num-1].question;
+  return store.questions[num].question;
 }
 
 function getAnswers(num){
   let answers = '';
-  for(i=0;i<store.questions[num-1].answers.length;i++){
-    answers += `<input type="radio" id=${store.questions[num-1].answers[i]} name="temp" value="${store.questions[num-1].answers[i]}"> <label for="${store.questions[num-1].answers[i]}">${store.questions[num-1].answers[i]}</label><br>`
+  for(i=0;i<store.questions[num].answers.length;i++){
+    answers += `<input type="radio" id=${store.questions[num].answers[i]} name="answer" value="${store.questions[num].answers[i]}"> <label for="${store.questions[num].answers[i]}">${store.questions[num].answers[i]}</label><br>`
   }
   return answers;
 }
@@ -109,8 +107,8 @@ function getAnswers(num){
 function generateQuestion(num){
   let question = getQuestion(num);
   let answers = getAnswers(num);
-  $('main').html(`<h2>Question ${num} of ${store.questions.length}</h2> 
-  <h2>Current Score: ${store.score}/${store.questions.length}</h2>
+  $('main').html(`<h2>Question ${num+1} of ${store.questions.length}</h2> 
+  <h2>Current Score: ${store.correctAnswers}/${store.questions.length}</h2>
   <div class="wrapper">
     <form>
         <h3>${question}</h3>
@@ -121,13 +119,73 @@ function generateQuestion(num){
   </div>`)
 }
 
-/********** EVENT HANDLER FUNCTIONS **********/
+function generateCorrectAnswerPage(){
+  $('main').html(`<h2>${store.questions[store.questionNumber].correctAnswer} is right</h2><h2>Your current score is ${store.correctAnswers}/5</h2><button id = "next">Next</button>`);
+}
 
-// These functions handle events (submit, click, etc)
-// On button click in main, check to see what kind of button it is and calls the corresponding function to generate stuff
+function generateWrongAnswerPage(){
+  $('main').html(`<h2>${$('input[name="answer"]:checked').val()} is wrong</h2><h2>The correct answer is ${store.questions[store.questionNumber].correctAnswer}.</h2><h2>Please double check to make sure that you are calculating the temperature using constant specific heats at room temperature.</h2><h2>Your score is ${store.correctAnswers}/5</h2><button id = "next">Next</button>`);
+}
+
+function generateEndPage(){
+  $('main').html(`<h2>You have completed the Applied Thermo Quiz.</h2><h2>Your final score is ${store.correctAnswers}/${store.questions.length}.</h2><button id = "restart-quiz">Restart Quiz</button>`)
+}
 
 
-//grab id instead of walking through the dom for the submit and next button
+function handleStartQuiz(){
+  $('main').on('click','#startQuiz',event =>{
+    console.log('handleStartQuiz ran');
+    store.questionNumber = 0;
+    store.correctAnswers = 0;
+    generateQuestion(store.questionNumber);
+  });
+}
 
+function handleSubmit(){
+  $('main').on('click','.submit',event=>{
+    event.preventDefault();
+    console.log('handleSubmit ran')
+    console.log(`${$('input[name="answer"]:checked').val()}`);
+    let clickCounter = 0;
+    
+    if (store.questionNumber != store.questions.length){
+      if ($('input[name="answer"]:checked').val() == store.questions[store.questionNumber].correctAnswer){
+        if (clickCounter < 1){
+          store.correctAnswers += 1;
+        };
+        generateCorrectAnswerPage();
+      }else{
+        generateWrongAnswerPage();
+      };
+    };
+  });
+}
 
-$(generateQuestion(1))
+function handleNext(){
+  $('main').on('click','#next',event =>{
+    console.log('handleNext ran');
+    store.questionNumber += 1;
+    if (store.questionNumber < store.questions.length){
+      generateQuestion(store.questionNumber);
+    }else{
+      generateEndPage();
+    };  
+  });
+};
+
+function handleRestartQuiz(){
+  $('main').on('click','#restart-quiz',event =>{
+    console.log(`handleRestartQuiz ran`);
+    generateStartPage();
+  });  
+};
+
+function quizApp(){
+  generateStartPage();
+  handleRestartQuiz();
+  handleNext();
+  handleSubmit();
+  handleStartQuiz();
+}
+
+$(quizApp());
