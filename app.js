@@ -35,8 +35,8 @@ const store = {
       question: 'An air-standard Diesel cycle has a compression ratio of 20.910. The cylinder contains 0.075 kg of air. At the beginning of the compression the pressure and temperature are 101 kPa and 298 K, respectively. The maximum temperature in the cycle is 1900 K. Accounting for the variation of specific heats with temperature, determine the cutoff rato.',
       answers: [
         '2.021',
-        '2.210',
-        '20.021',
+        '2.012',
+        '20.12',
         '20.21'
       ],
       correctAnswer: '2.021'
@@ -94,6 +94,11 @@ function getQuestion(num){
 function getAnswers(num){
   let answers = '';
   for(i=0;i<store.questions[num].answers.length;i++){
+    // if (i ==0){
+    //   answers += `<input type="radio" id=${store.questions[num].answers[0]} name="answer" value="${store.questions[num].answers[0]}" required> <label for="${store.questions[num].answers[0]}">${store.questions[num].answers[0]}</label><br>`
+    // }else{
+    //   answers += `<input type="radio" id=${store.questions[num].answers[i]} name="answer" value="${store.questions[num].answers[i]}"/> <label for="${store.questions[num].answers[i]}">${store.questions[num].answers[i]}</label><br>`
+    // }
     answers += `<input type="radio" id=${store.questions[num].answers[i]} name="answer" value="${store.questions[num].answers[i]}" required/> <label for="${store.questions[num].answers[i]}">${store.questions[num].answers[i]}</label><br>`
   }
   return answers;
@@ -103,7 +108,7 @@ function getAnswers(num){
 function generateQuestion(num){
   let question = getQuestion(num);
   let answers = getAnswers(num);
-  $('main').html(`<h2>Question ${num+1} of ${store.questions.length}</h2> 
+  const string = `<h2>Question ${num+1} of ${store.questions.length}</h2> 
   <h2>Current Score: ${store.correctAnswers}/${store.questions.length}</h2>
   <div class="wrapper">
     <form>
@@ -112,28 +117,36 @@ function generateQuestion(num){
         <br>
         <input class = "submit" type="submit" value="Submit">
     </form>
-  </div>`)
+  </div>`;
+  return string;
 }
 
 function generateCorrectAnswerPage(){
-  $('main').html(`<h2>${store.questions[store.questionNumber].correctAnswer} is right</h2><h2>Your current score is ${store.correctAnswers}/5</h2><button id = "next">Next</button>`);
+  const string = `<h2>${store.questions[store.questionNumber].correctAnswer} is right</h2><h2>Your current score is ${store.correctAnswers}/5</h2><button id = "next">Next</button>`;
+  return string;
 }
 
 function generateWrongAnswerPage(){
-  $('main').html(`<h2>${$('input[name="answer"]:checked').val()} is wrong</h2><h2>The correct answer is ${store.questions[store.questionNumber].correctAnswer}.</h2><h2>Please double check to make sure that you are calculating the temperature using constant specific heats at room temperature.</h2><h2>Your score is ${store.correctAnswers}/5</h2><button id = "next">Next</button>`);
+  const string = `<h2>${$('input[name="answer"]:checked').val()} is wrong</h2><h2>The correct answer is ${store.questions[store.questionNumber].correctAnswer}.</h2><h2>Please double check to make sure that you are calculating the temperature using constant specific heats at room temperature.</h2><h2>Your score is ${store.correctAnswers}/5</h2><button id = "next">Next</button>`;
+  return string;
 }
 
 function generateEndPage(){
-  $('main').html(`<h2>You have completed the Applied Thermo Quiz.</h2><h2>Your final score is ${store.correctAnswers}/${store.questions.length}.</h2><button id = "restart-quiz">Restart Quiz</button>`)
+  const string = `<h2>You have completed the Applied Thermo Quiz.</h2><h2>Your final score is ${store.correctAnswers}/${store.questions.length}.</h2><button id = "restart-quiz">Restart Quiz</button>`;
+  return string;
 }
 
+function render(string){
+  $('main').html(string);
+}
 
 function handleStartQuiz(){
   $('main').on('click','#startQuiz',event =>{
     console.log('handleStartQuiz ran');
     store.questionNumber = 0;
     store.correctAnswers = 0;
-    generateQuestion(store.questionNumber);
+    let question = generateQuestion(store.questionNumber);
+    render(question);
   });
 }
 
@@ -144,15 +157,20 @@ function handleSubmit(){
     console.log(`${$('input[name="answer"]:checked').val()}`);
     let clickCounter = 0;
     
-    if (store.questionNumber != store.questions.length){
+    if (typeof($('input[name="answer"]:checked').val())!== 'undefined'){
+      console.log(`${typeof($('input[name="answer"]:checked').val())}`)
       if ($('input[name="answer"]:checked').val() == store.questions[store.questionNumber].correctAnswer){
         if (clickCounter < 1){
           store.correctAnswers += 1;
         };
-        generateCorrectAnswerPage();
+        let correctAnswerPage = generateCorrectAnswerPage();
+        render(correctAnswerPage);
       }else{
-        generateWrongAnswerPage();
+        let wrongAnswerPage = generateWrongAnswerPage();
+        render(wrongAnswerPage);
       };
+    }else{
+      alert("You must pick an option!!!")
     };
   });
 }
@@ -162,9 +180,11 @@ function handleNext(){
     console.log('handleNext ran');
     store.questionNumber += 1;
     if (store.questionNumber < store.questions.length){
-      generateQuestion(store.questionNumber);
+      let question = generateQuestion(store.questionNumber);
+      render(question);
     }else{
-      generateEndPage();
+      let endPage = generateEndPage();
+      render(endPage);
     };  
   });
 };
@@ -172,12 +192,13 @@ function handleNext(){
 function handleRestartQuiz(){
   $('main').on('click','#restart-quiz',event =>{
     console.log(`handleRestartQuiz ran`);
-    generateStartPage();
+    let startPage = generateStartPage();
+    render(startPage);
   });  
 };
 
 function quizApp(){
-  generateStartPage();
+  render(generateStartPage());
   handleRestartQuiz();
   handleNext();
   handleSubmit();
