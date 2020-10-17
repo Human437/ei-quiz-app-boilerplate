@@ -53,7 +53,10 @@ const store = {
     }
   ],
   questionNumber: 0,
-  correctAnswers: 0
+  quizStarted: false,
+  correctAnswers: 0,
+  isCorrect: false,
+  submitted: false
 };
 
 /**
@@ -84,7 +87,7 @@ const store = {
 // These functions handle events (submit, click, etc)
 // On button click in main, check to see what kind of button it is and calls the corresponding function to generate stuff
 function generateStartPage(){
-  $('main').html('<div class="wrapper"><p>This quiz will assess your knowledge of the Diesel Cycle, please have your ideal gas table ready.</p><button id = "startQuiz">Start Quiz</button></div>');
+  return '<div class="wrapper"><p>This quiz will assess your knowledge of the Diesel Cycle, please have your ideal gas tables ready.</p><button id = "startQuiz">Start Quiz</button></div>';
 };
 
 function getQuestion(num){
@@ -94,11 +97,6 @@ function getQuestion(num){
 function getAnswers(num){
   let answers = '';
   for(i=0;i<store.questions[num].answers.length;i++){
-    // if (i ==0){
-    //   answers += `<input type="radio" id=${store.questions[num].answers[0]} name="answer" value="${store.questions[num].answers[0]}" required> <label for="${store.questions[num].answers[0]}">${store.questions[num].answers[0]}</label><br>`
-    // }else{
-    //   answers += `<input type="radio" id=${store.questions[num].answers[i]} name="answer" value="${store.questions[num].answers[i]}"/> <label for="${store.questions[num].answers[i]}">${store.questions[num].answers[i]}</label><br>`
-    // }
     answers += `<input type="radio" id=${store.questions[num].answers[i]} name="answer" value="${store.questions[num].answers[i]}" required/> <label for="${store.questions[num].answers[i]}">${store.questions[num].answers[i]}</label><br>`
   }
   return answers;
@@ -136,8 +134,25 @@ function generateEndPage(){
   return string;
 }
 
-function render(string){
-  $('main').html(string);
+function render(){
+  if (store.quizStarted == false){
+    $('main').html(generateStartPage());
+    return;
+  }else if(store.questionNumber < store.questions.length){
+    if (store.submitted == false){
+      $('main').html(generateQuestion(store.questionNumber));
+    }else{
+      store.submitted = false;
+      if (store.isCorrect==true){
+        $('main').html(generateCorrectAnswerPage());
+        store.isCorrect = false;
+      }else{
+        $('main').html(generateWrongAnswerPage());
+      }
+    }
+  }else{
+    $('main').html(generateEndPage());
+  }
 }
 
 function handleStartQuiz(){
@@ -145,8 +160,8 @@ function handleStartQuiz(){
     console.log('handleStartQuiz ran');
     store.questionNumber = 0;
     store.correctAnswers = 0;
-    let question = generateQuestion(store.questionNumber);
-    render(question);
+    store.quizStarted = true;
+    render();
   });
 }
 
@@ -158,16 +173,15 @@ function handleSubmit(){
     let clickCounter = 0;
     
     if (typeof($('input[name="answer"]:checked').val())!== 'undefined'){
-      console.log(`${typeof($('input[name="answer"]:checked').val())}`)
+      store.submitted = true;
       if ($('input[name="answer"]:checked').val() == store.questions[store.questionNumber].correctAnswer){
         if (clickCounter < 1){
           store.correctAnswers += 1;
         };
-        let correctAnswerPage = generateCorrectAnswerPage();
-        render(correctAnswerPage);
+        store.isCorrect = true;
+        render();
       }else{
-        let wrongAnswerPage = generateWrongAnswerPage();
-        render(wrongAnswerPage);
+        render();
       };
     }else{
       alert("You must pick an option!!!")
@@ -179,26 +193,20 @@ function handleNext(){
   $('main').on('click','#next',event =>{
     console.log('handleNext ran');
     store.questionNumber += 1;
-    if (store.questionNumber < store.questions.length){
-      let question = generateQuestion(store.questionNumber);
-      render(question);
-    }else{
-      let endPage = generateEndPage();
-      render(endPage);
-    };  
+    render();
   });
 };
 
 function handleRestartQuiz(){
   $('main').on('click','#restart-quiz',event =>{
     console.log(`handleRestartQuiz ran`);
-    let startPage = generateStartPage();
-    render(startPage);
+    store.quizStarted = false;
+    render();
   });  
 };
 
 function quizApp(){
-  render(generateStartPage());
+  render();
   handleRestartQuiz();
   handleNext();
   handleSubmit();
