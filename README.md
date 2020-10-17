@@ -1,1 +1,2 @@
-### Boilerplate app structure for Quiz App project
+### Quiz App project  
+View this page (live)[https://human437.github.io/quizApp/]!
